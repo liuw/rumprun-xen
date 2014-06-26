@@ -147,7 +147,7 @@ void start_kernel(start_info_t *si)
     init_xenbus();
 
     /* Call (possibly overridden) app_main() */
-    create_thread("main", _app_main, &start_info);
+    create_thread("main", NULL, _app_main, &start_info, NULL, 0);
 
     /* Everything initialised, start idle thread */
     run_idle_thread();

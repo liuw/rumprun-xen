@@ -150,7 +150,7 @@ create_thread(const char *name, void *cookie,
     struct thread *thread;
     unsigned long flags;
     /* Call architecture specific setup. */
-    thread = arch_create_thread(name, function, data);
+    thread = arch_create_thread(name, function, data, stack, stack_size);
     /* Not runable, not exited, not sleeping */
     thread->flags = 0;
     thread->wakeup_time = 0LL;
