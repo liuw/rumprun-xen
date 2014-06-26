@@ -145,16 +145,17 @@ void schedule(void)
 
 struct thread *
 create_thread(const char *name, void *cookie,
-	void (*function)(void *), void *data, void *stack, size_t stack_size)
+	void (*function)(void *), void *data, void *stack)
 {
     struct thread *thread;
     unsigned long flags;
     /* Call architecture specific setup. */
-    thread = arch_create_thread(name, function, data, stack, stack_size);
+    thread = arch_create_thread(name, function, data, stack);
     /* Not runable, not exited, not sleeping */
     thread->flags = 0;
     thread->wakeup_time = 0LL;
     thread->lwp = NULL;
+    thread->cookie = cookie;
     set_runnable(thread);
     local_irq_save(flags);
     TAILQ_INSERT_TAIL(&thread_list, thread, thread_list);
@@ -294,7 +295,7 @@ void init_sched(void)
 {
     printk("Initialising scheduler\n");
 
-    idle_thread = create_thread("Idle", NULL, idle_thread_fn, NULL, NULL, 0);
+    idle_thread = create_thread("Idle", NULL, idle_thread_fn, NULL, NULL);
 }
 
 void set_sched_hook(void (*f)(void *, void *))

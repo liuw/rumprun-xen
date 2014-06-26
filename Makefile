@@ -83,8 +83,10 @@ src-y += rumphyper_synch.c
 src-y += rumphyper_stubs.c
 
 src-y += callmain.c
+src-y += netbsd_init.c
 
 src-y += rumpkern_demo.c
+src-y += pthread_test.c
 
 src-$(CONFIG_XENBUS) += xen/xenbus/xenbus.c
 

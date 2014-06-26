@@ -416,7 +416,7 @@ rumpuser_bio(int fd, int op, void *data, size_t dlen, int64_t off,
 			bio_inited = 1;
 			rumpuser_mutex_exit(bio_mtx);
 			create_thread("biopoll", NULL,
-			    biothread, NULL, NULL, 0);
+			    biothread, NULL, NULL);
 		} else {
 			rumpuser_mutex_exit(bio_mtx);
 		}

@@ -376,6 +376,8 @@ dohttpd(void)
 	}
 }
 
+void test_pthread(void);
+
 int
 app_main(start_info_t *si)
 {
@@ -385,7 +387,7 @@ app_main(start_info_t *si)
 
 	if (si->cmd_line[0]) {
 		tests = si->cmd_line[0] - '0';
-		if (tests < 0 || tests > 7)
+		if (tests < 0 || tests > 0xf)
 			tests = 0;
 	}
 
@@ -395,6 +397,8 @@ app_main(start_info_t *si)
 		donet();
 	if (tests & 0x4)
 		dohttpd();
+	if (tests & 0x8)
+		test_pthread();
 
 	return 0;
 }

@@ -36,13 +36,12 @@ void switch_threads(struct thread *prev, struct thread *next);
  
     /* Architecture specific setup of thread creation. */
 struct thread* arch_create_thread(const char *name, void (*function)(void *),
-                                  void *data, void *stack, size_t stack_size);
+                                  void *data, void *stack);
 
 void init_sched(void);
 void run_idle_thread(void);
 struct thread* create_thread(const char *name, void *cookie,
-			     void (*f)(void *), void *data,
-			     void *stack, size_t stack_size);
+			     void (*f)(void *), void *data, void *stack);
 void exit_thread(void) __attribute__((noreturn));
 void join_thread(struct thread *);
 void set_sched_hook(void (*hook)(void *, void *));

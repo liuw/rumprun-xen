@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <sys/tls.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,8 @@
 #include <unistd.h>
 
 #include <mini-os/sched.h>
+#include <mini-os/os.h>
+#include <mini-os/mm.h>
 
 #if 0
 #define DPRINTF(x) printf x
@@ -43,7 +46,6 @@ struct schedulable {
 	void *scd_arg;
 
 	void *scd_stack;
-	size_t scd_stack_size;
 
 	struct lwpctl scd_lwpctl;
 
@@ -80,11 +82,15 @@ _lwp_rumpxen_makecontext(ucontext_t *nbuctx, void (*start)(void *),
     void *arg, void *private, void *stack_base, size_t stack_size)
 {
 	struct schedulable *scd = private;
+	unsigned long thestack = (unsigned long)stack_base;
 
 	scd->scd_start = start;
 	scd->scd_arg = arg;
-	scd->scd_stack = stack_base;
-	scd->scd_stack_size = stack_size;
+
+	/* XXX: stack_base is not guaranteed to be aligned */
+	thestack = (thestack & ~(STACK_SIZE-1)) + STACK_SIZE;
+	scd->scd_stack = (void *)thestack;
+	assert(stack_size == 2*STACK_SIZE);
 
 	/* thread uctx -> schedulable mapping this way */
 	*(struct schedulable **)nbuctx = scd;
@@ -111,7 +117,7 @@ _lwp_create(const ucontext_t *ucp, unsigned long flags, lwpid_t *lid)
 
 	scd->scd_lwpid = *lid;
 	scd->scd_thread = create_thread("lwp", scd,
-	    scd->scd_start, scd->scd_arg, scd->scd_stack, scd->scd_stack_size);
+	    scd->scd_start, scd->scd_arg, scd->scd_stack);
 	if (scd->scd_thread == NULL)
 		return EBUSY; /* ??? */
 	TAILQ_INSERT_TAIL(&scheds, scd, entries);
@@ -178,7 +184,7 @@ schedhook(void *prevcookie, void *nextcookie)
 }
 
 void
-_lwp_rumprun_scheduler_init(void)
+_lwp_rumpxen_scheduler_init(void)
 {
 
 	set_sched_hook(schedhook);
