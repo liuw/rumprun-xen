@@ -66,6 +66,16 @@ void inline print_runqueue(void)
     printk("\n");
 }
 
+static void (*scheduler_hook)(void *, void *);
+
+void switch_threads(struct thread *prev, struct thread *next)
+{
+
+    if (scheduler_hook)
+	scheduler_hook(prev->cookie, next->cookie);
+    arch_switch_threads(prev, next);
+}
+
 void schedule(void)
 {
     struct thread *prev, *next, *thread, *tmp;
@@ -94,9 +104,10 @@ void schedule(void)
         {
             if (!is_runnable(thread) && thread->wakeup_time != 0LL)
             {
-                if (thread->wakeup_time <= now)
+                if (thread->wakeup_time <= now) {
+		    thread->flags |= THREAD_TIMEDOUT;
                     wake(thread);
-                else if (thread->wakeup_time < min_wakeup_time)
+                } else if (thread->wakeup_time < min_wakeup_time)
                     min_wakeup_time = thread->wakeup_time;
             }
             if(is_runnable(thread)) 
@@ -125,14 +136,16 @@ void schedule(void)
         if(thread != prev)
         {
             TAILQ_REMOVE(&exited_threads, thread, thread_list);
-            free_pages(thread->stack, STACK_SIZE_PAGE_ORDER);
+	    if ((thread->flags & THREAD_EXTSTACK) == 0)
+                free_pages(thread->stack, STACK_SIZE_PAGE_ORDER);
             xfree(thread);
         }
     }
 }
 
 struct thread *
-create_thread(const char *name, void (*function)(void *), void *data)
+create_thread(const char *name, void *cookie,
+	void (*function)(void *), void *data, void *stack, size_t stack_size)
 {
     struct thread *thread;
     unsigned long flags;
@@ -234,12 +247,32 @@ void block(struct thread *thread)
     clear_runnable(thread);
 }
 
-void msleep(uint32_t millisecs)
+static int
+dosleep(s_time_t wakeuptime)
 {
     struct thread *thread = get_current();
-    thread->wakeup_time = NOW()  + MILLISECS(millisecs);
+    int rv;
+
+    thread->wakeup_time = wakeuptime;
+    thread->flags &= ~THREAD_TIMEDOUT;
     clear_runnable(thread);
     schedule();
+
+    rv = !!(thread->flags & THREAD_TIMEDOUT);
+    thread->flags &= ~THREAD_TIMEDOUT;
+    return rv;
+}
+
+int msleep(uint32_t millisecs)
+{
+
+    return dosleep(NOW() + MILLISECS(millisecs));
+}
+
+int absmsleep(uint32_t millisecs)
+{
+
+    return dosleep(MILLISECS(millisecs));
 }
 
 void wake(struct thread *thread)
@@ -261,7 +294,20 @@ void init_sched(void)
 {
     printk("Initialising scheduler\n");
 
-    idle_thread = create_thread("Idle", idle_thread_fn, NULL);
+    idle_thread = create_thread("Idle", NULL, idle_thread_fn, NULL, NULL, 0);
+}
+
+void set_sched_hook(void (*f)(void *, void *))
+{
+
+    scheduler_hook = f;
+}
+
+struct thread *init_mainlwp(void *cookie)
+{
+
+    current->cookie = cookie;
+    return current;
 }
 
 /*
