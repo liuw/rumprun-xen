@@ -3,5 +3,5 @@ set -e
 case " $* " in
 *" -v "*)   set -x ;;
 esac
-exec gcc -D__RUMPUSER_XEN__ -D__NetBSD__ -no-integrated-cpp \
- -specs=!APPTOOLS!/specs "$@"
+exec ${RUMP_APPTOOLS_CC:-cc} -D__RUMPUSER_XEN__ -D__NetBSD__ \
+  -no-integrated-cpp -specs=!APPTOOLS!/specs "$@"
