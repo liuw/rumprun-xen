@@ -140,7 +140,7 @@ $(TARGET): links $(OBJS) $(HTTPD_OBJS) $(APP_O) arch_lib
 
 
 APP_TOOLS += rumpapp-xen-cc specs
-APP_TOOLS += rumpapp-xen-configure rumpapp-xen-make
+APP_TOOLS += rumpapp-xen-configure rumpapp-xen-make rumpapp-xen-gmake
 
 .PHONY: app-tools
 app-tools: $(addprefix app-tools/, $(APP_TOOLS))
