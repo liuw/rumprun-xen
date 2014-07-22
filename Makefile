@@ -139,8 +139,8 @@ $(TARGET): links $(OBJS) $(HTTPD_OBJS) $(APP_O) arch_lib
 	#gzip -f -9 -c $@ >$@.gz
 
 
-APP_TOOLS += rumpxen-app-cc specs
-APP_TOOLS += rumpxen-app-configure rumpxen-app-make
+APP_TOOLS += rumpapp-xen-cc specs
+APP_TOOLS += rumpapp-xen-configure rumpapp-xen-make
 
 .PHONY: app-tools
 app-tools: $(addprefix app-tools/, $(APP_TOOLS))
