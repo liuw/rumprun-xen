@@ -62,3 +62,4 @@ STUB(_sys_msgsnd)
 // STUB(_sys_writev)
 WEAK_STUB(__sigtimedwait50) // XXX conflict with pthread_cancelstub
 STUB(____sigtimedwait50)
+STUB(mlockall)
