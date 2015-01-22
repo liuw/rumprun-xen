@@ -15,7 +15,7 @@ while [ $# != 0 ]; do
 	# ignore lib(s) which may be insisted upon by the toolchain
 	-lssp_nonshared)
 		;;
-	[^-]*|-L*|-l*|--whole-archive|--no-whole-archive|--start-group|--end-group)
+	[^-]*|-L*|-l*|--whole-archive|--no-whole-archive|--start-group|--end-group|--warn-common)
 		outargs+=("$a")
 		;;
 	-m)
